@@ -1,0 +1,46 @@
+# ============================================================
+# Application Configuration
+# ============================================================
+# Spring Boot reads this file on startup. YAML format is
+# just a cleaner alternative to application.properties.
+# ============================================================
+
+spring:
+  application:
+    name: rag-chat
+
+  # --- R2DBC (Reactive Database Connection) ---
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/ragchat
+    username: ragchat
+    password: ragchat123
+
+  # --- File Upload Limits ---
+  # Default is 1MB which is too small for PDFs
+  codec:
+    max-in-memory-size: 20MB
+
+  # --- Schema initialization ---
+  # Runs schema.sql on startup to create tables
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+
+# --- Ollama Configuration ---
+# Custom properties (not built-in Spring properties).
+# We read these in our Java code via @Value("${ollama.base-url}")
+ollama:
+  base-url: http://localhost:11434
+  embed-model: nomic-embed-text
+  chat-model: llama3.2:1b
+
+# --- Server ---
+server:
+  port: 8080
+
+# --- Logging ---
+logging:
+  level:
+    com.ragchat.ragchat: DEBUG
+    org.springframework.r2dbc: DEBUG

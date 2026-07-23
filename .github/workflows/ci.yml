@@ -1,0 +1,45 @@
+# ============================================================
+# CI Pipeline — runs tests on every push and pull request
+# ============================================================
+# This workflow:
+# 1. Checks out your code
+# 2. Sets up Java 21
+# 3. Runs `mvn test` (compiles + runs all JUnit tests)
+#
+# GitHub Actions is free for public repositories.
+# ============================================================
+
+name: CI - Build & Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('backend/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Run tests
+        working-directory: backend
+        run: mvn test --batch-mode

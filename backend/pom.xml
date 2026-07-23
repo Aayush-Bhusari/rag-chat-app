@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Spring Boot parent — gives us dependency version management,
+         plugin defaults, and sensible config out of the box. -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.5</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.ragchat</groupId>
+    <artifactId>rag-chat</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>RAG Chat Application</name>
+    <description>AI-powered RAG chat with Spring WebFlux, pgvector, and Ollama</description>
+
+    <properties>
+        <java.version>21</java.version>
+    </properties>
+
+    <dependencies>
+        <!-- =============================================
+             CORE: Spring WebFlux (reactive web framework)
+             =============================================
+             WHY WebFlux instead of regular Spring MVC?
+             Spring MVC uses one thread per request and BLOCKS
+             while waiting for the DB or LLM API to respond.
+             WebFlux is non-blocking: while waiting for Ollama
+             to generate tokens, the thread is free to handle
+             other requests. Essential for streaming. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
+        <!-- =============================================
+             DATABASE: R2DBC (Reactive Database Connectivity)
+             =============================================
+             WHY R2DBC instead of JPA/Hibernate?
+             JPA is blocking — it would undo the non-blocking
+             benefit of WebFlux. R2DBC is the reactive equivalent:
+             database queries return Mono/Flux instead of blocking. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-r2dbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>r2dbc-postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- =============================================
+             PDF EXTRACTION: Apache PDFBox
+             =============================================
+             Extracts raw text from uploaded PDF files.
+             Free, well-maintained, no external service needed. -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>3.0.3</version>
+        </dependency>
+
+        <!-- =============================================
+             JSON: Jackson (already included via webflux,
+             but declaring explicitly for clarity)
+             ============================================= -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <!-- =============================================
+             UTILITIES
+             ============================================= -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- =============================================
+             TESTING
+             ============================================= -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

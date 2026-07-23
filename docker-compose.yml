@@ -1,0 +1,51 @@
+# ============================================================
+# Docker Compose for RAG Chat App
+# Services: PostgreSQL+pgvector, Ollama (local LLM)
+# ============================================================
+# WHY DOCKER COMPOSE?
+# Instead of installing Postgres and Ollama separately on your
+# machine, we define them here and `docker compose up` spins
+# everything up in isolated containers that talk to each other.
+# ============================================================
+
+services:
+  # --- PostgreSQL with pgvector extension ---
+  # pgvector adds vector column types and similarity search
+  # operators directly inside Postgres — no separate vector DB.
+  postgres:
+    image: pgvector/pgvector:pg16          # Official pgvector image (Postgres 16 + extension)
+    container_name: ragchat-postgres
+    environment:
+      POSTGRES_DB: ragchat
+      POSTGRES_USER: ragchat
+      POSTGRES_PASSWORD: ragchat123
+    ports:
+      - "5432:5432"                         # Expose on localhost:5432 so your Spring Boot app can connect
+    volumes:
+      - pgdata:/var/lib/postgresql/data     # Persist data across restarts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ragchat"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # --- Ollama (local LLM server) ---
+  # Runs LLMs locally with zero API keys. Exposes a REST API
+  # on port 11434 that works almost identically to OpenAI's API.
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ragchat-ollama
+    ports:
+      - "11434:11434"                       # Ollama API endpoint
+    volumes:
+      - ollama_data:/root/.ollama           # Persist downloaded models across restarts
+    # NOTE: On first run, you'll need to pull models manually:
+    #   docker exec ragchat-ollama ollama pull nomic-embed-text
+    #   docker exec ragchat-ollama ollama pull llama3.2:1b
+    # We use llama3.2:1b (1 billion params) because it's small
+    # enough to run on a laptop CPU without a GPU. Larger models
+    # (llama3.1:8b) give better answers but need more RAM/GPU.
+
+volumes:
+  pgdata:
+  ollama_data:
